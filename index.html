@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Energy Tap Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+            color: #333;
+        }
+        #energy, #clicks {
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 20px;
+            transition: transform 0.2s;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+        img:active {
+            transform: scale(0.95);
+        }
+        #message {
+            font-size: 18px;
+            color: #d9534f;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="energy">Energy: 100</div>
+    <div id="clicks">Clicks: 0</div>
+    <img src="image1.jpg" alt="Tap here!" id="tapImage">
+    <div id="message"></div>
+    <script>
+        // Переменные
+        let energy = 100;
+        let clicks = 0;
+        const maxEnergy = 100;
+        const regenInterval = 10 * 1000; // 10 секунд
+
+        const energyDisplay = document.getElementById('energy');
+        const clicksDisplay = document.getElementById('clicks');
+        const messageDisplay = document.getElementById('message');
+        const tapImage = document.getElementById('tapImage');
+
+        // Работа с куками
+        function setCookie(name, value, days) {
+            const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+            document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+        }
+
+        function getCookie(name) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [key, value] = cookie.trim().split('=');
+                if (key === name) return value;
+            }
+            return null;
+        }
+
+        function saveProgress() {
+            setCookie('energy', energy, 7); // Храним данные 7 дней
+            setCookie('clicks', clicks, 7);
+        }
+
+        function loadProgress() {
+            const savedEnergy = getCookie('energy');
+            const savedClicks = getCookie('clicks');
+            if (savedEnergy !== null) energy = parseInt(savedEnergy, 10);
+            if (savedClicks !== null) clicks = parseInt(savedClicks, 10);
+        }
+
+        // Обновление отображения
+        function updateEnergyDisplay() {
+            energyDisplay.innerText = `Energy: ${energy}`;
+        }
+
+        function updateClicksDisplay() {
+            clicksDisplay.innerText = `Clicks: ${clicks}`;
+        }
+
+        // Регенерация энергии
+        function regenerateEnergy() {
+            if (energy < maxEnergy) {
+                energy++;
+                updateEnergyDisplay();
+                saveProgress();
+            }
+        }
+
+        // Обработка клика
+        tapImage.addEventListener('click', () => {
+            if (energy > 0) {
+                energy--;
+                clicks++;
+                updateEnergyDisplay();
+                updateClicksDisplay();
+                messageDisplay.innerText = '';
+                saveProgress();
+            } else {
+                messageDisplay.innerText = 'Нет энергии 😢 Подожди регенерации!';
+            }
+        });
+
+        // Загрузка данных при старте
+        loadProgress();
+        updateEnergyDisplay();
+        updateClicksDisplay();
+
+        // Запуск регенерации энергии
+        setInterval(regenerateEnergy, regenInterval);
+    </script>
+</body>
+</html>
